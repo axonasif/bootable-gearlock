@@ -1,7 +1,9 @@
+BUILD_TOP := $(shell pwd)
+
 GEARLOCK_ROOT:= "$(call my-dir)"
 ANDROID_MAJOR_VERSION := $(word 1, $(subst ., , $(PLATFORM_VERSION)))
-PATCH_FILE:= "$(ANDROID_BUILD_TOP)/$(GEARLOCK_ROOT)/patches/android-$(ANDROID_MAJOR_VERSION).patch"
-PATCH_TARGET:= "$(ANDROID_BUILD_TOP)/bootable/newinstaller"
+PATCH_FILE:= "$(BUILD_TOP)/$(GEARLOCK_ROOT)/patches/android-$(ANDROID_MAJOR_VERSION).patch"
+PATCH_TARGET:= "$(BUILD_TOP)/bootable/newinstaller"
 ifneq ($(filter 4 5 6, $(ANDROID_MAJOR_VERSION)),)
 $(error "No ready to use patch files are available for android $(ANDROID_MAJOR_VERSION) yet")
 endif
