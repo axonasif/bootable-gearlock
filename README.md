@@ -13,4 +13,8 @@ git clone https://github.com/AXIM0S/bootable-gearlock gearlock
 
 You can also do `make -j4 gearlock` to only apply GearLock patches.
 
-#### Then build ISO.
+## Then build ISO.
+
+# Full Developer Documentation
+
+https://supreme-gamers.com/gearlock
