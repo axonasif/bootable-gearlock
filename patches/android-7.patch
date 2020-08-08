@@ -1,0 +1,50 @@
+Binary files newinstaller.orig/.git/index and newinstaller/.git/index differ
+diff -Nur newinstaller.orig/Android.mk newinstaller/Android.mk
+--- newinstaller.orig/Android.mk	2020-08-08 10:34:05.403025673 +0600
++++ newinstaller/Android.mk	2020-08-08 10:27:46.993663019 +0600
+@@ -75,7 +75,7 @@
+ 	$(ACP) -pr $(dir $(<D)) $@
+ 	$(ACP) -pr $(dir $(<D))../install/grub2/efi $@
+ 
+-BUILT_IMG := $(addprefix $(PRODUCT_OUT)/,ramdisk.img initrd.img install.img) $(systemimg)
++BUILT_IMG := $(addprefix $(PRODUCT_OUT)/,ramdisk.img initrd.img install.img gearlock) $(systemimg)
+ BUILT_IMG += $(if $(TARGET_PREBUILT_KERNEL),$(TARGET_PREBUILT_KERNEL),$(PRODUCT_OUT)/kernel)
+ 
+ ISO_IMAGE := $(PRODUCT_OUT)/$(TARGET_PRODUCT).iso
+diff -Nur newinstaller.orig/initrd/init newinstaller/initrd/init
+--- newinstaller.orig/initrd/init	2020-08-08 10:34:05.451026727 +0600
++++ newinstaller/initrd/init	2020-08-08 10:28:15.900471964 +0600
+@@ -208,7 +208,7 @@
+ [ -n "$INSTALL" ] && do_install
+ 
+ load_modules
+-mount_data
++mount_data; hook_gearinit
+ mount_sdcard
+ setup_tslib
+ setup_dpi
+diff -Nur newinstaller.orig/install/grub2/efi/boot/android.cfg newinstaller/install/grub2/efi/boot/android.cfg
+--- newinstaller.orig/install/grub2/efi/boot/android.cfg	2020-08-08 10:34:05.519028218 +0600
++++ newinstaller/install/grub2/efi/boot/android.cfg	2020-08-08 10:30:38.004193447 +0600
+@@ -38,7 +38,9 @@
+ export android kdir live src
+ 
+ # Create main menu
+-add_entry "$live" quiet
++add_entry "$live" quiet NORECOVERY=0
++# You can use ALWAYSRECOVER=0 flag to skip the countdown also.
++add_entry "$live (GearLock Recovery Mode)" quiet
+ add_entry "$debug_mode" DEBUG=2
+ if [ -s ($android)$kdir/install.img ]; then
+ 	add_entry "Installation" INSTALL=1
+diff -Nur newinstaller.orig/install/scripts/1-install newinstaller/install/scripts/1-install
+--- newinstaller.orig/install/scripts/1-install	2020-08-08 10:34:05.587029711 +0600
++++ newinstaller/install/scripts/1-install	2020-08-08 10:29:25.842353293 +0600
+@@ -473,6 +473,7 @@
+ 	try_upgrade hd/$asrc
+ 	mkdir -p hd/$asrc
+ 	cd hd/$asrc
++	test -e "/mnt/$SRC/gearlock" && cp "/mnt/$SRC/gearlock" . # Copy gearlock boot image
+ 	rm -rf system*
+ 	( ( cd /; find $files | $CPIO -H newc -o ) | pv -ns ${size}k | ( $CPIO -iud > /dev/null; echo $? > /tmp/result )) 2>&1 \
+ 		| progress_bar "Installing Android-x86 to $1" "Expect to write $size KB..."

@@ -1,0 +1,49 @@
+diff -Nur newinstaller.orig/Android.mk newinstaller/Android.mk
+--- newinstaller.orig/Android.mk	2020-08-08 09:44:48.554452093 +0600
++++ newinstaller/Android.mk	2020-08-08 09:45:33.433310766 +0600
+@@ -78,7 +78,7 @@
+ 	mkdosfs -n EFI $$img; mmd -i $$img ::boot; \
+ 	mcopy -si $$img $@/efi ::; mdel -i $$img ::efi/boot/*.cfg
+ 
+-BUILT_IMG := $(addprefix $(PRODUCT_OUT)/,initrd.img install.img) $(systemimg)
++BUILT_IMG := $(addprefix $(PRODUCT_OUT)/,initrd.img install.img gearlock) $(systemimg)
+ BUILT_IMG += $(if $(TARGET_PREBUILT_KERNEL),$(TARGET_PREBUILT_KERNEL),$(PRODUCT_OUT)/kernel)
+ 
+ ISO_IMAGE := $(PRODUCT_OUT)/$(TARGET_PRODUCT).iso
+diff -Nur newinstaller.orig/initrd/init newinstaller/initrd/init
+--- newinstaller.orig/initrd/init	2020-08-08 09:44:48.558452169 +0600
++++ newinstaller/initrd/init	2020-08-08 09:45:33.433310766 +0600
+@@ -200,7 +200,7 @@
+ [ -n "$INSTALL" ] && do_install
+ 
+ load_modules
+-mount_data
++mount_data; hook_gearinit
+ mount_sdcard
+ setup_tslib
+ setup_dpi
+diff -Nur newinstaller.orig/install/grub2/efi/boot/android.cfg newinstaller/install/grub2/efi/boot/android.cfg
+--- newinstaller.orig/install/grub2/efi/boot/android.cfg	2020-08-08 09:44:48.572452438 +0600
++++ newinstaller/install/grub2/efi/boot/android.cfg	2020-08-08 09:45:33.433310766 +0600
+@@ -83,7 +83,9 @@
+ export android bootefi grub kdir live src
+ 
+ # Create main menu
+-add_entry "$live" quiet
++add_entry "$live" quiet NORECOVERY=0
++# You can use ALWAYSRECOVER=0 flag to skip the countdown also.
++add_entry "$live (GearLock Recovery Mode)" quiet
+ add_entry "$debug_mode" DEBUG=2
+ if [ -s ($android)$kdir/install.img ]; then
+ 	add_entry "Installation" INSTALL=1
+diff -Nur newinstaller.orig/install/scripts/1-install newinstaller/install/scripts/1-install
+--- newinstaller.orig/install/scripts/1-install	2020-08-08 09:44:48.592452822 +0600
++++ newinstaller/install/scripts/1-install	2020-08-08 09:45:33.435310804 +0600
+@@ -520,6 +520,7 @@
+ 
+ 	mkdir -p hd/$asrc
+ 	cd hd/$asrc
++	test -e "/mnt/$SRC/gearlock" && cp "/mnt/$SRC/gearlock" . # Copy gearlock boot image
+ 	rm -rf system* *.img
+ 	( ( cd /; find $files | $CPIO -H newc -o ) | pv -ns ${size}k | ( $CPIO -iud > /dev/null; echo $? > /tmp/result )) 2>&1 \
+ 		| progress_bar "Installing $OS_TITLE to $1" "Expect to write $size KB..."
