@@ -18,3 +18,7 @@ You can also do `make -j4 gearlock` to only apply GearLock patches.
 # Full Developer Documentation
 
 https://supreme-gamers.com/gearlock
+
+#### There is a different kind of adaption for Android Generic done by @electrikjesus available at
+
+https://gitlab.com/AXIM0S/vendor-gearlock
